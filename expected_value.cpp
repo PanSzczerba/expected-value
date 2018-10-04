@@ -41,7 +41,7 @@ inline double join_averages(double average1, unsigned long long average1_element
 int main(int argc, char** argv)
 {
     using namespace std;
-    const unsigned FUTURE_POOL_SIZE = thread::hardware_concurrency() - 1; // minus one for the main thread
+    const unsigned FUTURE_POOL_SIZE = thread::hardware_concurrency() > 0 ? thread::hardware_concurrency() - 1 : 0; // minus one for the main thread
 
     if(argc < 3)
     {
