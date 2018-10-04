@@ -3,9 +3,7 @@
 #include <algorithm>
 #include <vector>
 #include <functional>
-#include <numeric>
 #include <future>
-#include <utility>
 #include <chrono>
 #include <random>
 
