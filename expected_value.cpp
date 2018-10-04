@@ -49,8 +49,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    srand(time(NULL));
-
     unsigned long long n;
     unsigned long long sample;
     try
