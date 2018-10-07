@@ -30,6 +30,7 @@
 *.exe
 *.out
 *.app
+expected_value
 
 # Vim swap files
 *.swp
