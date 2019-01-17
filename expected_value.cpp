@@ -13,6 +13,7 @@ double count_expected_value(unsigned long long n, unsigned long long sample)
 {
     using namespace std;
     mt19937 random_generator(chrono::system_clock::now().time_since_epoch().count() ^ hash<thread::id>()(this_thread::get_id()));
+    //random_device random_generator;
     uniform_real_distribution<double> distribution(-1.0, 1.0);
     auto generate_minus_one_to_one = bind(distribution, ref(random_generator));
     vector<double> data(n);
@@ -41,13 +42,28 @@ inline double join_averages(double average1, unsigned long long average1_element
 int main(int argc, char** argv)
 {
     using namespace std;
-    const unsigned FUTURE_POOL_SIZE = thread::hardware_concurrency() > 0 ? thread::hardware_concurrency() - 1 : 0; // minus one for the main thread
 
     if(argc < 3)
     {
         cerr<<"Error: too few arguments"<<endl;
         return 1;
     }
+    
+    unsigned future_pool_size = thread::hardware_concurrency() > 0 ? thread::hardware_concurrency() - 1 : 0; // minus one for the main thread
+    if(argc >= 4)
+    {
+        try
+        {
+            future_pool_size = stoull(argv[3]);
+            if(future_pool_size > 0)
+                future_pool_size--; //main thread
+        } catch (invalid_argument& e)
+        {
+            cerr<<"Error: invalid thread number: "<<argv[3]<<endl;
+            return 1;
+        }
+    }
+
 
     unsigned long long n;
     unsigned long long sample;
@@ -60,10 +76,10 @@ int main(int argc, char** argv)
         cerr<<"Error: invalid input"<<endl;
         return 1;
     }
-    future<double> future_pool[FUTURE_POOL_SIZE];
-    unsigned long long batch = sample / (FUTURE_POOL_SIZE + 1);
+    future<double> future_pool[future_pool_size];
+    unsigned long long batch = sample / (future_pool_size + 1);
 
-    for(unsigned i = 0; i < FUTURE_POOL_SIZE; i++)
+    for(unsigned i = 0; i < future_pool_size; i++)
     {
         future_pool[i] = async(launch::async, count_expected_value, n, batch);
         sample -= batch;
@@ -72,7 +88,7 @@ int main(int argc, char** argv)
     double average = count_expected_value(n, sample);
 
     double batch_average;
-    for(unsigned i = 0; i < FUTURE_POOL_SIZE; i++)
+    for(unsigned i = 0; i < future_pool_size; i++)
     {
         batch_average = future_pool[i].get();
         average = join_averages(average, average_elements_count, batch_average, batch);
