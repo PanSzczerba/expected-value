@@ -13,20 +13,17 @@ double count_expected_value(unsigned long long n, unsigned long long sample)
 {
     using namespace std;
     mt19937 random_generator(chrono::system_clock::now().time_since_epoch().count() ^ hash<thread::id>()(this_thread::get_id()));
-    //random_device random_generator;
+    // random_device random_generator;
     uniform_real_distribution<double> distribution(-1.0, 1.0);
     auto generate_minus_one_to_one = bind(distribution, ref(random_generator));
     vector<double> data(n);
-
-    generate(data.begin(), data.end(), generate_minus_one_to_one);
-    auto span = find_highest_subsequence_sum(data.begin(), data.end());
-    double average = accumulate(span.start, span.stop, (double)0);
-    unsigned long long average_elements_count = 1;
+    double average = 0;
+    unsigned long long average_elements_count = 0;
 
     for(unsigned long long i = 0; i < sample; i++)
     {
         generate(data.begin(), data.end(), generate_minus_one_to_one);
-        span = find_highest_subsequence_sum(data.begin(), data.end());
+        auto span = find_highest_subsequence_sum(data.begin(), data.end());
         average_elements_count++;
         average += (accumulate(span.start, span.stop, (double)0) - average) / average_elements_count;
     }
@@ -56,7 +53,7 @@ int main(int argc, char** argv)
         {
             future_pool_size = stoull(argv[3]);
             if(future_pool_size > 0)
-                future_pool_size--; //main thread
+                future_pool_size--; // main thread
         } catch (invalid_argument& e)
         {
             cerr<<"Error: invalid thread number: "<<argv[3]<<endl;
@@ -76,6 +73,7 @@ int main(int argc, char** argv)
         cerr<<"Error: invalid input"<<endl;
         return 1;
     }
+
     future<double> future_pool[future_pool_size];
     unsigned long long batch = sample / (future_pool_size + 1);
 
@@ -84,10 +82,11 @@ int main(int argc, char** argv)
         future_pool[i] = async(launch::async, count_expected_value, n, batch);
         sample -= batch;
     }
+    
     unsigned long long average_elements_count = sample;
     double average = count_expected_value(n, sample);
-
     double batch_average;
+
     for(unsigned i = 0; i < future_pool_size; i++)
     {
         batch_average = future_pool[i].get();
