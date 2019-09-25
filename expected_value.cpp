@@ -16,16 +16,18 @@ double count_expected_value(unsigned long long n, unsigned long long sample)
     // random_device random_generator;
     uniform_real_distribution<double> distribution(-1.0, 1.0);
     auto generate_minus_one_to_one = bind(distribution, ref(random_generator));
+
     vector<double> data(n);
     double average = 0;
+    double sum;
     unsigned long long average_elements_count = 0;
 
     for(unsigned long long i = 0; i < sample; i++)
     {
         generate(data.begin(), data.end(), generate_minus_one_to_one);
-        auto span = find_highest_subsequence_sum(data.begin(), data.end());
+        sum = find_highest_subsequence_sum(data.begin(), data.end());
         average_elements_count++;
-        average += (accumulate(span.start, span.stop, (double)0) - average) / average_elements_count;
+        average += (sum - average) / average_elements_count;
     }
 
     return average;
@@ -60,7 +62,6 @@ int main(int argc, char** argv)
             return 1;
         }
     }
-
 
     unsigned long long n;
     unsigned long long sample;

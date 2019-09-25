@@ -1,28 +1,15 @@
 #pragma once
-template <class Iter>
-struct Span
-{
-    Iter start;
-    Iter stop;
-    Span(Iter start, Iter stop)
-    {
-        this->start = start;
-        this->stop = stop;
-    }
 
-    Span(){}
-};
-
-template<typename Iter, typename Num = float>
-Span<Iter> find_highest_subsequence_sum(Iter start_sequence, Iter stop_sequence)
+template<typename Iter>
+double find_highest_subsequence_sum(Iter start_sequence, Iter stop_sequence)
 {
    auto current_start = start_sequence;
    auto current_stop = start_sequence;
+   double current_sum = 0;
 
-   Num current_sum = 0;
    auto max_start = start_sequence;
    auto max_stop = start_sequence;
-   Num max_sum = *start_sequence;
+   double max_sum = *start_sequence;
 
    for(; current_stop != stop_sequence; current_stop++)
    {
@@ -42,6 +29,6 @@ Span<Iter> find_highest_subsequence_sum(Iter start_sequence, Iter stop_sequence)
        }
    }
 
-   return Span<Iter>(max_start, max_stop + 1);
+   return max_sum;
 }
 
